@@ -55,6 +55,7 @@
     <Compile Include="Animation\Animation.cs" />
     <Compile Include="Animation\AnimationController.cs" />
     <Compile Include="Animation\EventTrigger.cs" />
+    <Compile Include="Animation\AniObject.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>

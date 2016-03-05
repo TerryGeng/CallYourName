@@ -86,9 +86,9 @@ namespace CallYourName
 
             foreach (Animation1D an in anis)
             {
-                an.Motion = (new Motion())
+                an.Motion = (new ActionSet())
                     .WithMoveAction(0, -LABEL_ACC, 0, 0, null, null, "Init")
-                    .WithMoveAction(null, -LABEL_ACC, -LABEL_MAX_SPEED, -an.Item.Width, null, onReachL, "Acc1")
+                    .WithMoveAction(null, -LABEL_ACC, -LABEL_MAX_SPEED, -an.AniObject.Width, null, onReachL, "Acc1")
                     .WithMoveAction(null, 0, null, null, null, onReachL, "Mov1")
                     .WithMoveAction(null, LABEL_ACC, 0, null, onStop, onReachL, "Stop"); // On Stopping.
                 an.EventTrigger 
@@ -111,21 +111,21 @@ namespace CallYourName
             }
         }
 
-        private void onReachL(MoveAction caller, Motion motion, Animation1D an)
+        private void onReachL(MoveAction caller, ActionSet motion, Animation1D an)
         {
-            an.Item.Left = tail.Left + tail.Width + 10;
+            an.AniObject.Left = tail.Left + tail.Width + 10;
 
-            if (an.Item.Left < panel1.Width) an.Item.Left = panel1.Width;
+            if (an.AniObject.Left < panel1.Width) an.AniObject.Left = panel1.Width;
 
             //an.Item.Text = RandomName();
-            an.Item.ForeColor = RandomColor();
+            an.AniObject.ForeColor = RandomColor();
 
-            tail = an.Item as Label;
+            tail = an.AniObject as Label;
 
             an.Motion.ToPreviousAction();
         }
 
-        private void onStop(MoveAction caller, Motion motion, Animation1D animation)
+        private void onStop(MoveAction caller, ActionSet motion, Animation1D animation)
         {
             lock (stopLock)
             {
@@ -188,7 +188,7 @@ namespace CallYourName
             }
         }
 
-        private void onRealStop(MoveAction caller, Motion motion, Animation1D animation)
+        private void onRealStop(MoveAction caller, ActionSet motion, Animation1D animation)
         {
             aniCtrl2.Stop();
         }

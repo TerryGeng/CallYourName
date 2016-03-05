@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Timers;
 using Timer = System.Timers.Timer;
 
@@ -11,21 +11,20 @@ namespace CallYourName.Animation
 {
     class AnimationController
     {
-        private Timer timer;
-        private LinkedList<Animation1D> animationList;
+        private List<Animation1D> animationList;
 
         private bool running;
+        private Thread aniThread;
 
-        public AnimationController(int interval = 20)
+        public AnimationController()
         {
-            timer = new Timer(interval);
-            animationList = new LinkedList<Animation1D>();
+            animationList = new List<Animation1D>();
             running = false;
         }
 
         public void AddAnimation(Animation1D ani)
         {
-            animationList.AddLast(ani);
+            animationList.Add(ani);
         }
 
         public void RemoveAnimation(Animation1D ani)
@@ -36,38 +35,50 @@ namespace CallYourName.Animation
         public void Start()
         {
             if (running) return;
-
             running = true;
+
+            aniThread = new Thread(Loop);
+            aniThread.Name = "Animation";
 
             foreach (Animation1D ani in animationList)
             {
-                ani.Initialize((int)timer.Interval);
+                ani.Initialize();
             }
 
-            timer.Elapsed += onElapsedEvent;
-            timer.Start();
+            aniThread.Start();
+        }
+
+        public void Loop()
+        {
+            int lastTime = System.Environment.TickCount;
+
+            while (running)
+            {
+                int current = System.Environment.TickCount;
+                int delta = current - lastTime;
+
+                foreach (Animation1D ani in animationList)
+                {
+                    ani.LoopEvent(delta);
+                }
+
+                lastTime = current;
+
+                Thread.Sleep(1);
+            }
         }
 
         public void Stop()
         {
             if (!running) return;
+            running = false;
 
-            timer.Elapsed -= onElapsedEvent;
-            timer.Stop();
+            while (aniThread.IsAlive)
+                Thread.Sleep(1);
 
             foreach (Animation1D ani in animationList)
             {
                 ani.Stop();
-            }
-
-            running = false;
-        }
-
-        public void onElapsedEvent(object o, ElapsedEventArgs args)
-        {
-            foreach (Animation1D ani in animationList)
-            {
-                ani.MoveOnce();
             }
         }
 

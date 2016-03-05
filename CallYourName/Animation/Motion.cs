@@ -6,29 +6,31 @@ using System.Threading.Tasks;
 
 namespace CallYourName.Animation
 {
-    class Motion
+    class ActionSet
     {
+        public Animation1D Animation;
         private LinkedList<IAction> actionSeq;
         private LinkedListNode<IAction> currentAction;
         private LinkedListNode<IAction> nextAction;
 
-        public Motion()
+        public ActionSet(Animation1D ani)
         {
             actionSeq = new LinkedList<IAction>();
+            Animation = ani;
         }
 
         #region Add Action
-        public Motion WithMoveAction(double? initV, double? accele, double? finalV, double? finalLoc,
-           MoveAction.EventDelegate reachV = null, MoveAction.EventDelegate reachL = null, string name = null)
+        public ActionSet WithMoveAction(double? initV, double accele, double finalV, double finalLoc,
+            MoveAction.EventDelegate reachL = null, string name = null)
         {
-            actionSeq.AddLast(new MoveAction(initV, accele, finalV, finalLoc, reachV, reachL, name));
+            actionSeq.AddLast(new MoveAction(Animation.AniObject, initV, accele, finalV, finalLoc, reachL, name));
 
             return this;
         }
 
-        public Motion WithCallAction(CallAction.CallActionDelegate callDelegate, string name = null)
+        public ActionSet WithCallAction(CallAction.CallActionDelegate callDelegate, string name = null)
         {
-            actionSeq.AddLast(new CallAction(callDelegate, name));
+            actionSeq.AddLast(new CallAction(callDelegate, this, Animation, name));
 
             return this;
         }
@@ -52,7 +54,7 @@ namespace CallYourName.Animation
             return currentAction.Value;
         }
 
-        public Motion ToPreviousAction()
+        public ActionSet ToPreviousAction()
         {
             if (nextAction != null)
                 nextAction = nextAction.Previous;
@@ -61,13 +63,13 @@ namespace CallYourName.Animation
             return this;
         }
 
-        public Motion ToLastAction()
+        public ActionSet ToLastAction()
         {
             nextAction = actionSeq.Last;
             return this;
         }
 
-        public Motion ToFirstAction()
+        public ActionSet ToFirstAction()
         {
             nextAction = actionSeq.First;
             return this;

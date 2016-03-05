@@ -6,71 +6,96 @@ using System.Threading.Tasks;
 
 namespace CallYourName.Animation
 {
-    enum ActionType
-    {
-        Undefined,
-        MoveAction,
-        CallAction
-    }
-
     interface IAction
     {
-        ActionType ActionType { get; }
         string ActionName { get; }
+
+        bool DoAction(int time);
     }
 
     class MoveAction : IAction
     {
-        public delegate void EventDelegate(MoveAction caller, Motion motion, Animation1D animation);
+        public delegate void EventDelegate(MoveAction caller, ActionSet motion, Animation1D animation);
 
-        public ActionType ActionType { get { return ActionType.MoveAction; } }
+        public IAniObject AniObject;
         public string ActionName { get; private set; }
 
-        public double? InitalVelocity;
-        public double? Acceleration;
-        public double? FinalVelocity;
-        public double? FinalLocation;
-        public EventDelegate ReachedFinalVelocity;
+        public double InitalVelocity;
+        public double Acceleration;
+        public double FinalVelocity;
+        public double FinalLocation;
         public EventDelegate ReachedFinalLocation;
+        private IAniObject aniObj;
+        private double? initV;
+        private double? accele;
+        private double? finalV;
+        private double? finalLoc;
+        private EventDelegate reachL;
+        private string name;
 
-        public EventTrigger EventTrigger;
 
-        public MoveAction(double? InitV, double? Accele, double? FinalV, double? FinalLoc, EventDelegate ReachV = null, EventDelegate ReachL = null , string ActionName = null)
+        public MoveAction(IAniObject AniObj, double? InitV, double Accele, double FinalV, double FinalLoc, EventDelegate ReachL = null , string ActionName = null)
         {
-            this.InitalVelocity = InitV;
+            this.AniObject = AniObj;
             this.Acceleration = Accele;
             this.FinalVelocity = FinalV;
             this.FinalLocation = FinalLoc;
 
+            if (InitV.HasValue)
+                this.InitalVelocity = InitV.Value;
+            else
+                this.InitalVelocity = AniObj.MotionAttri.v;
+
             this.ReachedFinalLocation = ReachL;
-            this.ReachedFinalVelocity = ReachV;
 
             this.ActionName = ActionName;
-
-            this.EventTrigger = new EventTrigger1D(); 
-            // TODO: init position?!?!?! construct event respond in terms of TriggerFunction.
-            // One animation one motion.
         }
 
-        public void ReachMaxV(Animation1D animation)
-        {
+        public bool DoAction(int time){
+            MotionAttri attr = this.AniObject.MotionAttri;
+            if (Acceleration < 0 && attr.v > this.FinalVelocity
+                || Acceleration > 0 && attr.v < this.FinalVelocity)
+            {
+                attr.v += Acceleration;
+            }
 
+            if (attr.v < 0 && attr.x > this.FinalLocation
+                || attr.v > 0 && attr.x < this.FinalLocation)
+            {
+                AniObject.MoveLeft(attr.v * time);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 
     class CallAction : IAction
     {
-        public delegate void CallActionDelegate(CallAction caller, Motion motion, Animation1D animation);
+        public delegate void CallActionDelegate(CallAction caller, ActionSet set, Animation1D animation);
 
-        public ActionType ActionType { get { return ActionType.CallAction; } }
         public string ActionName { get; private set; }
 
         public CallActionDelegate CallDelegate;
 
-        public CallAction(CallActionDelegate callDelegate, string ActionName = null)
+        private ActionSet actionSet;
+        private Animation1D animation;
+
+        public CallAction(CallActionDelegate callDelegate, ActionSet actionSet, Animation1D ani, string ActionName = null)
         {
             CallDelegate = callDelegate;
             this.ActionName = ActionName;
+            this.animation = ani;
+            this.actionSet = actionSet;
+        }
+
+        public bool DoAction(int time)
+        {
+            CallDelegate(this, actionSet, animation);
+
+            return false;
         }
     }
 }
