@@ -48,12 +48,19 @@ namespace CallYourName.Animation
         {
             if (!running) return;
 
-            curAction = ActionSet.NextAction();
+            if ((curAction = ActionSet.NextAction()) == null)
+            {
+                Stop();
+                return;
+            }
+            
             Debug.WriteLine("[{0}] Get Action: {1}", ID, curAction.ActionName);
         }
 
         public void LoopEvent(int timeInterval)
         {
+            if (!running) return; 
+
             if (!curAction.DoAction(timeInterval))
             {
                 loadNextAction();

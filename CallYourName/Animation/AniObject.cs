@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Diagnostics;
+
 
 namespace CallYourName.Animation
 {
@@ -23,24 +25,23 @@ namespace CallYourName.Animation
 
     interface IAniObject
     {
-        public MotionAttri MotionAttri;
-        public void MoveLeft(double x);
-        public void MoveRight(double x);
-        public void MoveUp(double x);
-        public void MoveDown(double x);
-        public void Move();
+        MotionAttri MotionAttri { get; set; }
+        void MoveLeft(double x);
+        void MoveRight(double x);
+        void MoveUp(double x);
+        void MoveDown(double x);
+        void Move();
     }
 
     class ObjectWrapper : IAniObject
     {
         public Control Object;
-        public MotionAttri MotionAttri;
+        public MotionAttri MotionAttri { get; set; }
 
         public ObjectWrapper(Control obj)
         {
             Object = obj;
-            MotionAttri.x = obj.Left;
-            MotionAttri.y = obj.Top;
+            MotionAttri = new MotionAttri(obj.Left, obj.Top, 0);
         }
 
         public void Move()
@@ -71,6 +72,7 @@ namespace CallYourName.Animation
         {
             MotionAttri.x -= x;
             Object.Left = (int)MotionAttri.x;
+            Debug.WriteLine("a: {0} b: {1}", MotionAttri.x, Object.Left);
         }
     }
 }

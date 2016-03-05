@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading;
 using System.Timers;
 using Timer = System.Timers.Timer;
+using System.Diagnostics;
+
 
 
 namespace CallYourName.Animation
@@ -64,8 +66,10 @@ namespace CallYourName.Animation
 
                 lastTime = current;
 
-                Thread.Sleep(1);
+                Thread.Sleep(10);
             }
+
+            return;
         }
 
         public void Stop()
@@ -74,7 +78,9 @@ namespace CallYourName.Animation
             running = false;
 
             while (aniThread.IsAlive)
+            {
                 Thread.Sleep(1);
+            }
 
             foreach (Animation1D ani in animationList)
             {

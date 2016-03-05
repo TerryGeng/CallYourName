@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
+
 
 namespace CallYourName.Animation
 {
@@ -15,26 +17,16 @@ namespace CallYourName.Animation
 
     class MoveAction : IAction
     {
-        public delegate void EventDelegate(MoveAction caller, ActionSet motion, Animation1D animation);
-
         public IAniObject AniObject;
         public string ActionName { get; private set; }
 
-        public double InitalVelocity;
+        public double? InitalVelocity;
         public double Acceleration;
-        public double FinalVelocity;
-        public double FinalLocation;
-        public EventDelegate ReachedFinalLocation;
-        private IAniObject aniObj;
-        private double? initV;
-        private double? accele;
-        private double? finalV;
-        private double? finalLoc;
-        private EventDelegate reachL;
-        private string name;
+        public double? FinalVelocity;
+        public double? FinalLocation;
 
 
-        public MoveAction(IAniObject AniObj, double? InitV, double Accele, double FinalV, double FinalLoc, EventDelegate ReachL = null , string ActionName = null)
+        public MoveAction(IAniObject AniObj, double? InitV, double Accele, double? FinalV, double? FinalLoc, string ActionName = null)
         {
             this.AniObject = AniObj;
             this.Acceleration = Accele;
@@ -46,29 +38,42 @@ namespace CallYourName.Animation
             else
                 this.InitalVelocity = AniObj.MotionAttri.v;
 
-            this.ReachedFinalLocation = ReachL;
-
             this.ActionName = ActionName;
         }
 
         public bool DoAction(int time){
             MotionAttri attr = this.AniObject.MotionAttri;
-            if (Acceleration < 0 && attr.v > this.FinalVelocity
-                || Acceleration > 0 && attr.v < this.FinalVelocity)
+            if (this.FinalVelocity.HasValue)
             {
-                attr.v += Acceleration;
+                if (Acceleration < 0 && attr.v > this.FinalVelocity
+                    || Acceleration > 0 && attr.v < this.FinalVelocity)
+                {
+                    attr.v += Acceleration;
+                }
+                else
+                {
+                    if (attr.v != this.FinalVelocity) attr.v = this.FinalVelocity.Value;
+                    if (attr.v == 0) return false;
+                }
             }
 
-            if (attr.v < 0 && attr.x > this.FinalLocation
-                || attr.v > 0 && attr.x < this.FinalLocation)
+
+            if (this.FinalLocation.HasValue)
             {
-                AniObject.MoveLeft(attr.v * time);
-                return true;
+                if (attr.v < 0 && attr.x > this.FinalLocation
+                    || attr.v > 0 && attr.x < this.FinalLocation)
+                {
+                    AniObject.MoveRight(attr.v * time);
+                    Debug.WriteLine("d: {0} t: {1}", attr.v * time, time);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
-            else
-            {
-                return false;
-            }
+
+            return true;
         }
     }
 

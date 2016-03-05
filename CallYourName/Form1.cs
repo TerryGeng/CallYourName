@@ -18,8 +18,8 @@ namespace CallYourName
     public partial class Form1 : Form
     {
         const string FILE_NAME = "list.txt";
-        const int LABEL_MAX_SPEED = 3000; //(positive, px/s)
-        const int LABEL_ACC = 100;  //(positive, px^2/s)
+        const double LABEL_MAX_SPEED = 0.1; //(positive, px/ms)
+        const double LABEL_ACC = 0.01;  //(positive, px^2/ms)
         const int DEFAULT_WINDOW_H = 226;
 
         private Random rand;
@@ -59,18 +59,19 @@ namespace CallYourName
             stopLock = new object();
 
 
-            for (int i = 0; i < labels.Count; ++i)
+//            for (int i = 0; i < labels.Count; ++i)
+            for (int i = 0; i < 1; ++i)
             {
                 if (i > 0)
                     labels[i].Left = labels[i - 1].Left + labels[i - 1].Width + 10;
                 else
                     labels[i].Left = panel1.Width;
 
-                labels[i].Text = RandomName();
+                //labels[i].Text = RandomName();
                 labels[i].ForeColor = RandomColor();
                 labels[i].Visible = true;
 
-                var an = new Animation1D(labels[i], null, i.ToString());
+                var an = new Animation1D(new ObjectWrapper(labels[i]), null, i.ToString());
 
                 anis.Add(an);
                 aniCtrl.AddAnimation(an);
@@ -86,12 +87,13 @@ namespace CallYourName
 
             foreach (Animation1D an in anis)
             {
-                an.Motion = (new ActionSet())
-                    .WithMoveAction(0, -LABEL_ACC, 0, 0, null, null, "Init")
-                    .WithMoveAction(null, -LABEL_ACC, -LABEL_MAX_SPEED, -an.AniObject.Width, null, onReachL, "Acc1")
-                    .WithMoveAction(null, 0, null, null, null, onReachL, "Mov1")
-                    .WithMoveAction(null, LABEL_ACC, 0, null, onStop, onReachL, "Stop"); // On Stopping.
-                an.EventTrigger 
+                var item = an.AniObject as ObjectWrapper;
+                an.ActionSet = (new ActionSet(an))
+                    .WithMoveAction(0, -LABEL_ACC, 0, 0, "Init")
+                    .WithMoveAction(null, -LABEL_ACC, -LABEL_MAX_SPEED, -item.Object.Width, "Acc1")
+                    .WithCallAction(onReachL, "ReachL")
+                    .WithMoveAction(null, LABEL_ACC, 0, -item.Object.Width, "Acc2")
+                    .WithCallAction(onReachL, "ReachL");
             }
 
             aniCtrl.Start();
@@ -100,97 +102,81 @@ namespace CallYourName
             button2.Visible = true;
         }
 
+
+        private void onReachL(CallAction caller, ActionSet motion, Animation1D an)
+        {
+            var aniObj = an.AniObject as ObjectWrapper;
+            var label = aniObj.Object as Label;
+            aniObj.MotionAttri.x = tail.Left + tail.Width + 10;
+
+            if (aniObj.MotionAttri.x < panel1.Width) aniObj.MotionAttri.x = panel1.Width;
+
+            aniObj.Move();
+
+            label.Text = RandomName();
+            label.ForeColor = RandomColor();
+
+            tail = (an.AniObject as ObjectWrapper).Object as Label;
+
+            an.ActionSet.ToPreviousAction();
+        }
+
         private void button2_Click(object sender, EventArgs e)
         {
-            button2.Enabled = false;
 
-            foreach (Animation1D an in anis)
-            {
-                an.Motion.ToLastAction();
-                an.NextAction();
-            }
-        }
+            Debug.WriteLine("Stop was called.");
 
-        private void onReachL(MoveAction caller, ActionSet motion, Animation1D an)
-        {
-            an.AniObject.Left = tail.Left + tail.Width + 10;
+            aniCtrl.Stop();
 
-            if (an.AniObject.Left < panel1.Width) an.AniObject.Left = panel1.Width;
+            //int last = labels.IndexOf(tail) + 1;
+            //while (true)
+            //{
+            //    if (last >= labels.Count) last = 0;
 
-            //an.Item.Text = RandomName();
-            an.AniObject.ForeColor = RandomColor();
+            //    if (labels[last].Left > 0 && labels[last].Left < panel1.Width)
+            //    {
+            //        labels[last].ForeColor = Color.Red;
+            //        select = last;
 
-            tail = an.AniObject as Label;
+            //        int mid = (int)(0.5 * (panel1.Width - labels[last].Width));
+            //        int v = (labels[last].Left > mid) ? -100 : 100;
 
-            an.Motion.ToPreviousAction();
-        }
+            //        //int x = labels[last].Left - mid;
+            //        //int acc = 10;
+            //        //double maxV = Math.Sqrt(2 * LABEL_ACC * 0.5 * x);
 
-        private void onStop(MoveAction caller, ActionSet motion, Animation1D animation)
-        {
-            lock (stopLock)
-            {
-                if (stop) return;
-                stop = true;
+            //        //if (mid < labels[last].Left)
+            //        //{ 
+            //        //    maxV = -maxV;
+            //        //    acc = -acc;
+            //        //}
 
-                Debug.WriteLine("Stop was called.");
+            //        //aniCtrl2 = new AnimationController();
 
-                aniCtrl.Stop();
+            //        //for (int i = 0; i < labels.Count; ++i)
+            //        //{
+            //        //    var an = new Animation1D(labels[i], null);
+            //        //    an.Motion = (new Motion())
+            //        //    .WithMoveAction(v, 0, null, mid, null, null, "xAcc1")
+            //        //    .WithCallAction(onRealStop, "xCallStop");
 
-                int last = labels.IndexOf(tail) + 1;
-                while (true)
-                {
-                    if (last >= labels.Count) last = 0;
+            //        //    aniCtrl2.AddAnimation(an);
+            //        //}
 
-                    if (labels[last].Left > 0 && labels[last].Left < panel1.Width)
-                    {
-                        labels[last].ForeColor = Color.Red;
-                        select = last;
+            //        //aniCtrl2.Start();
 
-                        int mid = (int)(0.5 * (panel1.Width - labels[last].Width));
-                        int v = (labels[last].Left > mid) ? -100 : 100;
-
-                        //int x = labels[last].Left - mid;
-                        //int acc = 10;
-                        //double maxV = Math.Sqrt(2 * LABEL_ACC * 0.5 * x);
-
-                        //if (mid < labels[last].Left)
-                        //{ 
-                        //    maxV = -maxV;
-                        //    acc = -acc;
-                        //}
-
-                        //aniCtrl2 = new AnimationController();
-
-                        //for (int i = 0; i < labels.Count; ++i)
-                        //{
-                        //    var an = new Animation1D(labels[i], null);
-                        //    an.Motion = (new Motion())
-                        //    .WithMoveAction(v, 0, null, mid, null, null, "xAcc1")
-                        //    .WithCallAction(onRealStop, "xCallStop");
-
-                        //    aniCtrl2.AddAnimation(an);
-                        //}
-
-                        //aniCtrl2.Start();
-
-                        //player.Play();
-                        break;
-                    }
-                    else
-                        last++;
-                }
+            //        //player.Play();
+            //        break;
+            //    }
+            //    else
+            //        last++;
+            //}
 
 
-                button1.Visible = true;
-                button2.Visible = false;
-                button2.Enabled = true;
+            button1.Visible = true;
+            button2.Visible = false;
+            button2.Enabled = true;
 
-            }
-        }
-
-        private void onRealStop(MoveAction caller, ActionSet motion, Animation1D animation)
-        {
-            aniCtrl2.Stop();
         }
 
 
