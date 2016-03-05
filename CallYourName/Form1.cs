@@ -71,7 +71,7 @@ namespace CallYourName
                 labels[i].ForeColor = RandomColor();
                 labels[i].Visible = true;
 
-                var an = new Animation1D(new ObjectWrapper(labels[i]), null, i.ToString());
+                var an = new Animation1D(new ObjectWrapper(labels[i]), i.ToString());
 
                 anis.Add(an);
                 aniCtrl.AddAnimation(an);
@@ -88,8 +88,7 @@ namespace CallYourName
             foreach (Animation1D an in anis)
             {
                 var item = an.AniObject as ObjectWrapper;
-                an.ActionSet = (new ActionSet(an))
-                    .WithMoveAction(0, -LABEL_ACC, 0, 0, "Init")
+                an.WithMoveAction(0, -LABEL_ACC, 0, 0, "Init")
                     .WithMoveAction(null, -LABEL_ACC, -LABEL_MAX_SPEED, -item.Object.Width, "Acc1")
                     .WithCallAction(onReachL, "ReachL")
                     .WithMoveAction(null, LABEL_ACC, 0, -item.Object.Width, "Acc2")
@@ -103,7 +102,7 @@ namespace CallYourName
         }
 
 
-        private void onReachL(CallAction caller, ActionSet motion, Animation1D an)
+        private void onReachL(CallAction caller, Animation1D an)
         {
             var aniObj = an.AniObject as ObjectWrapper;
             var label = aniObj.Object as Label;
@@ -118,7 +117,7 @@ namespace CallYourName
 
             tail = (an.AniObject as ObjectWrapper).Object as Label;
 
-            an.ActionSet.ToPreviousAction();
+            an.ToPreviousAction();
         }
 
         private void button2_Click(object sender, EventArgs e)

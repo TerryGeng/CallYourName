@@ -79,26 +79,24 @@ namespace CallYourName.Animation
 
     class CallAction : IAction
     {
-        public delegate void CallActionDelegate(CallAction caller, ActionSet set, Animation1D animation);
+        public delegate void CallActionDelegate(CallAction caller, Animation1D animation);
 
         public string ActionName { get; private set; }
 
         public CallActionDelegate CallDelegate;
 
-        private ActionSet actionSet;
         private Animation1D animation;
 
-        public CallAction(CallActionDelegate callDelegate, ActionSet actionSet, Animation1D ani, string ActionName = null)
+        public CallAction(CallActionDelegate callDelegate, Animation1D ani, string ActionName = null)
         {
             CallDelegate = callDelegate;
             this.ActionName = ActionName;
             this.animation = ani;
-            this.actionSet = actionSet;
         }
 
         public bool DoAction(int time)
         {
-            CallDelegate(this, actionSet, animation);
+            CallDelegate(this, animation);
 
             return false;
         }
