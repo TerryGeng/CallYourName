@@ -1,0 +1,8 @@
+E:\Programme\VB\CallYourName\CallYourName\bin\Release\CallYourName.exe.config
+E:\Programme\VB\CallYourName\CallYourName\bin\Release\CallYourName.exe
+E:\Programme\VB\CallYourName\CallYourName\bin\Release\CallYourName.pdb
+E:\Programme\VB\CallYourName\CallYourName\obj\Release\CallYourName.Form1.resources
+E:\Programme\VB\CallYourName\CallYourName\obj\Release\CallYourName.Properties.Resources.resources
+E:\Programme\VB\CallYourName\CallYourName\obj\Release\CallYourName.csproj.GenerateResource.Cache
+E:\Programme\VB\CallYourName\CallYourName\obj\Release\CallYourName.exe
+E:\Programme\VB\CallYourName\CallYourName\obj\Release\CallYourName.pdb

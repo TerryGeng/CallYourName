@@ -1,0 +1,8 @@
+The Implementation of Animate Component
+
+Concept cloud: 
+* Class: Animate. One class one motion(single item or multiple items).
+* Timeline & Trigger: Timer.
+* Motion property - Velocity(x,y in px/s), acceleration(x,y in px/s).
+* Method: Start, Stop.
+* Event: ReachdSpeed, ReachedX, ReachedY, Done.
