@@ -89,9 +89,9 @@ namespace CallYourName
                 {
                     var item = an.AniObject as ObjectWrapper;
                     an.Reset();
-                    an.WithMoveAction(0, -LABEL_ACC, 0, 0, "Init")
-                        .WithMoveAction(null, -LABEL_ACC, -LABEL_MAX_SPEED, -item.Object.Width, "Acc1")
-                        .WithCallAction(onAcc1Call, "ReachL");
+                    an.WithMoveAction(null, -LABEL_ACC, -LABEL_MAX_SPEED, -item.Object.Width, "Acc1")
+                      .WithCallAction(onAcc1Call, "ReachL");
+                    an.ToFirstAction();
                 }
             }
 
@@ -122,31 +122,19 @@ namespace CallYourName
             an.ToPreviousAction();
         }
 
-        private void onAcc1Call(CallAction caller, Animation1D an)
+        private bool onAcc1Call(CallAction caller, Animation1D an)
         {
             reachLeft(caller, an);
+
+            return true;
         }
 
-        private void onAcc2Call(CallAction caller, Animation1D an)
+        private bool onAcc3Call(CallAction caller, Animation1D an)
         {
             var aniObj = an.AniObject as ObjectWrapper;
             var label = aniObj.Object as Label;
 
-            if (label.Left < -label.Width)
-            {
-                reachLeft(caller, an);
-            }
-            else //Speed has reached 10%v.
-            {
-                StopAtCandidate();
-            }
-        }
-
-        private void onAcc3Call(CallAction caller, Animation1D an)
-        {
-            var aniObj = an.AniObject as ObjectWrapper;
-            var label = aniObj.Object as Label;
-
+            Debug.WriteLine("Left: {0} {1}", label.Left  , -label.Width);
             if (label.Left < -label.Width)
             {
                 reachLeft(caller, an);
@@ -158,28 +146,29 @@ namespace CallYourName
                 candidate.ForeColor = Color.Red;
                 player.Play();
 
+                Debug.WriteLine("Cand pos:{0}", candidate.Left);
+
                 Startbutton.Visible = true;
                 StopButton.Visible = false;
                 StopButton.Enabled = true;
             }
 
+            return true;
         }
         #endregion
 
         #region Stop
         private void StopAtCandidate()
         {
-            lock (aniCtrl)
+            Debug.WriteLine("--Calculate--");
+            double acc = FindStopAcc();
+            foreach (Animation1D an in anis)
             {
-                double acc = FindStopAcc();
-                foreach (Animation1D an in anis)
-                {
-                    var item = an.AniObject as ObjectWrapper;
-                    an.Reset();
-                    an.WithMoveAction(null, acc, 0, -item.Object.Width, "Acc3")
-                    .WithCallAction(onAcc3Call, "ReachLS");
-                    an.ToFirstAction();
-                }
+                var item = an.AniObject as ObjectWrapper;
+                an.Reset();
+                an.WithMoveAction(null, acc, 0, -item.Object.Width, "Acc3")
+                .WithCallAction(onAcc3Call, "ReachLS");
+                an.ToFirstAction();
             }
         }
 
@@ -188,25 +177,33 @@ namespace CallYourName
             int midpos = (int)(0.5 * panel1.Width);
 
             Label cand = null;
-            int diff = 0;
+            double diff = 0;
 
-            foreach (Label la in labels)
+            foreach (Animation1D ani in anis)
             {
-                int ldiff = la.Left - midpos;
-                if (ldiff > 100)
+                var label = ani.AniObject as ObjectWrapper;
+
+                double ldiff = label.MotionAttri.x - midpos;
+                Debug.WriteLine("Left:{0}", label.MotionAttri.x);
+                if (ldiff > 0)
                 {
                     if (cand == null || ldiff < diff)
                     {
-                        cand = la;
+                        cand = label.Object as Label;
                         diff = ldiff;
                     }
                 }
             }
 
-            int finalPos = diff - (int)0.5 * cand.Width;
+            int finalPos = (int)(midpos - 0.5 * cand.Width);
+
+            Debug.WriteLine("Cand Pos Cur:{0} Fin:{1}", cand.Left, finalPos);
+            Debug.WriteLine("Cand Name:{0}", cand.Text);
+
             candidate = cand;
 
-            double acc = (0.01 * LABEL_MAX_SPEED * LABEL_MAX_SPEED) / (2 * finalPos); // a = (0.1v)^2/(2x)
+            double acc = (LABEL_MAX_SPEED * LABEL_MAX_SPEED) / (2 * (cand.Left - finalPos)); // a = (0.1v)^2/(2x)
+            Debug.WriteLine("Acc:{0}", acc);
 
             return acc;
         }
@@ -216,19 +213,10 @@ namespace CallYourName
             Debug.WriteLine("Stop was called.");
             StopButton.Enabled = false;
 
-            double maxV = 0.1 * LABEL_MAX_SPEED;
-
             lock (aniCtrl)
             {
                 Debug.WriteLine("Stop is doing.");
-                foreach (Animation1D an in anis)
-                {
-                    var item = an.AniObject as ObjectWrapper;
-                    an.Reset();
-                    an.WithMoveAction(null, LABEL_ACC, maxV, -item.Object.Width, "Acc2")
-                    .WithCallAction(onAcc2Call, "ReachLV");
-                    an.ToFirstAction();
-                }
+                StopAtCandidate();
                 Debug.WriteLine("Stop has done.");
             }
         }

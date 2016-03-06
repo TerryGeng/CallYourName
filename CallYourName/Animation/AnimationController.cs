@@ -61,9 +61,11 @@ namespace CallYourName.Animation
                     int current = System.Environment.TickCount;
                     int delta = current - lastTime;
 
+                    //Debug.WriteLine("-----");
                     foreach (Animation1D ani in animationList)
                     {
                         ani.LoopEvent(delta);
+                        //Debug.WriteLine("[{0}] x: {1} v:{2}", ani.ID, ani.AniObject.MotionAttri.x, ani.AniObject.MotionAttri.v);
                     }
 
                     lastTime = current;

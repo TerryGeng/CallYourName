@@ -22,7 +22,7 @@ namespace CallYourName.Animation
     {
         public string ID;
         public IAniObject AniObject { get; private set; }
-        public AnimationStatus Status;
+        //public AnimationStatus Status;
 
         private List<IAction> actionSeq;
         private int cur;
@@ -33,18 +33,17 @@ namespace CallYourName.Animation
         public Animation1D(IAniObject item, string ID = "Default")
         {
             this.AniObject = item;
-            this.Status = AnimationStatus.Uninitialized;
+            //this.Status = AnimationStatus.Uninitialized;
             this.ID = ID;
 
             actionSeq = new List<IAction>();
-            cur = -1;
+            cur = 0;
 
         }
 
         public void Initialize()
         {
             running = true;
-            loadNextAction();
         }
 
         #region Running Loop Thread
@@ -60,7 +59,7 @@ namespace CallYourName.Animation
                 return;
             }
 
-            Debug.WriteLine("[{0}] Get: {1}", ID, actionSeq[cur].ActionName);
+            //Debug.WriteLine("[{0}] Get: {1}", ID, actionSeq[cur].ActionName);
 
         }
 
@@ -68,7 +67,7 @@ namespace CallYourName.Animation
         {
             if (!running) return;
 
-            Debug.WriteLine("[{0}] Cur: {1}", ID, actionSeq[cur].ActionName);
+            //Debug.WriteLine("[{0}]Try do {1}", ID, actionSeq[cur].ActionName);
             if (!actionSeq[cur].DoAction(timeInterval))
             {
                 loadNextAction();
@@ -77,7 +76,6 @@ namespace CallYourName.Animation
 
         public void Stop()
         {
-            Status = AnimationStatus.Stop;
             running = false;
         }
 
@@ -133,9 +131,9 @@ namespace CallYourName.Animation
 
         public Animation1D ToPreviousAction()
         {
-            Debug.WriteLine("[{0}][To Pre]Cur: {1}",this.ID , cur);
             Debug.Assert(cur != 0);
             cur -= 1;
+            //Debug.WriteLine("[{0}][To]Cur: {1}",this.ID , actionSeq[cur].ActionName);
             return this;
         }
 

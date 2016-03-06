@@ -25,6 +25,8 @@ namespace CallYourName.Animation
         public double? FinalVelocity;
         public double? FinalLocation;
 
+        public bool acc_ing;
+
 
         public MoveAction(IAniObject AniObj, double? InitV, double Accele, double? FinalV, double? FinalLoc, string ActionName = null)
         {
@@ -39,37 +41,50 @@ namespace CallYourName.Animation
                 this.InitalVelocity = AniObj.MotionAttri.v;
 
             this.ActionName = ActionName;
+
+            acc_ing = (Accele != 0) ? true : false;
         }
 
         public bool DoAction(int time){
             MotionAttri attr = this.AniObject.MotionAttri;
-            if (this.FinalVelocity.HasValue)
+            double delta = attr.v * time;
+
+            if (acc_ing == true)
             {
-                if (Acceleration < 0 && attr.v > this.FinalVelocity
-                    || Acceleration > 0 && attr.v < this.FinalVelocity)
+                attr.v += Acceleration * time;
+                if (this.FinalVelocity.HasValue)
                 {
-                    attr.v += Acceleration;
+                    if (!(Acceleration < 0 && attr.v > this.FinalVelocity
+                        || Acceleration > 0 && attr.v < this.FinalVelocity))
+                    {
+                        if (attr.v != this.FinalVelocity)
+                        {
+                            attr.v = this.FinalVelocity.Value;
+                            acc_ing = false;
+                        }
+
+                        if (attr.v == 0) return false;
+                    }
                 }
-                else
-                {
-                    if (attr.v != this.FinalVelocity) attr.v = this.FinalVelocity.Value;
-                    if (attr.v == 0) return false;
-                }
+                delta += 0.5 * Acceleration * time * time;
             }
 
-
-            if (this.FinalLocation.HasValue)
+            if (delta != 0)
             {
-                if (attr.v < 0 && attr.x > this.FinalLocation
-                    || attr.v > 0 && attr.x < this.FinalLocation)
+                attr.x += delta;
+                AniObject.Move();
+                if (this.FinalLocation.HasValue)
                 {
-                    AniObject.MoveRight(attr.v * time);
-                    Debug.WriteLine("d: {0} t: {1}", attr.v * time, time);
-                    return true;
-                }
-                else
-                {
-                    return false;
+                    if (attr.v < 0 && attr.x > this.FinalLocation
+                        || attr.v > 0 && attr.x < this.FinalLocation)
+                    {
+                        //Debug.WriteLine("d: {0} t: {1}", attr.v * time, time);
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
             }
 
@@ -79,7 +94,7 @@ namespace CallYourName.Animation
 
     class CallAction : IAction
     {
-        public delegate void CallActionDelegate(CallAction caller, Animation1D animation);
+        public delegate bool CallActionDelegate(CallAction caller, Animation1D animation);
 
         public string ActionName { get; private set; }
 
@@ -96,9 +111,7 @@ namespace CallYourName.Animation
 
         public bool DoAction(int time)
         {
-            CallDelegate(this, animation);
-
-            return false;
+            return CallDelegate(this, animation);
         }
     }
 }

@@ -131,7 +131,7 @@
             this.groupBox1.Controls.Add(this.checkBox1);
             this.groupBox1.Location = new System.Drawing.Point(21, 201);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(358, 50);
+            this.groupBox1.Size = new System.Drawing.Size(358, 95);
             this.groupBox1.TabIndex = 3;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "选项";
@@ -167,7 +167,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(403, 261);
+            this.ClientSize = new System.Drawing.Size(403, 308);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.StopButton);
             this.Controls.Add(this.Startbutton);
