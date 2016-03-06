@@ -13,6 +13,7 @@ namespace CallYourName.Animation
 {
     class AnimationController
     {
+        public int FPS;
         private List<Animation1D> animationList;
 
         private bool running;
@@ -61,6 +62,8 @@ namespace CallYourName.Animation
                     int current = System.Environment.TickCount;
                     int delta = current - lastTime;
 
+                    if(delta != 0) FPS = 1000 / delta;
+
                     //Debug.WriteLine("-----");
                     foreach (Animation1D ani in animationList)
                     {
@@ -81,6 +84,7 @@ namespace CallYourName.Animation
         {
             if (!running) return;
             running = false;
+            FPS = 0;
 
             Thread.Sleep(1);
 

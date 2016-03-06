@@ -15,23 +15,35 @@ using Timer = System.Timers.Timer;
 
 namespace CallYourName
 {
+
     public partial class Form1 : Form
     {
+
         const string FILE_NAME = "list.txt";
-        const double LABEL_MAX_SPEED = 2; //(positive, px/ms)
-        const double LABEL_ACC = 0.01;  //(positive, px^2/ms)
-        const int DEFAULT_WINDOW_H = 226;
+        const string SETTING_FILE = "setting.ini";
+        const int DEFAULT_WINDOW_H = 253;
+        const int OPTION_WINDOW_H = 545;
+
+        double labelMaxSpeed = 2; //(positive, px/ms)
+        double labelAcc = 0.01;  //(positive, px^2/ms)
+
 
         private Random rand;
         private SoundPlayer player;
 
-        private string[] nameList;
+        private List<string> nameList;
         private List<Label> labels;
         private List<Animation1D> anis;
         private AnimationController aniCtrl;
 
         private Label tail;
         private Label candidate;
+
+        private Color candidateColor = Color.Red;
+
+        private bool isOptionOpen;
+
+        private int timeCount = 0;
 
         public Form1()
         {
@@ -44,7 +56,18 @@ namespace CallYourName
                 Environment.Exit(0);
             }
 
-            nameList = File.ReadAllLines(FILE_NAME, Encoding.Unicode);
+            //readSetting();
+
+            try
+            {
+                readSetting();
+            }
+            catch
+            {
+                MessageBox.Show("配置文件损坏！", "错误！", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            nameList = File.ReadAllLines(FILE_NAME, Encoding.Unicode).ToList();
             rand = new Random();
             labels = new List<Label>(new[] { label1, label2, label3, label4 });
             player = new SoundPlayer(Properties.Resources.MySound);
@@ -60,7 +83,7 @@ namespace CallYourName
                     labels[i].Left = panel1.Width;
 
                 labels[i].Text = RandomName();
-                labels[i].ForeColor = RandomColor();
+                labels[i].ForeColor = GetColor();
                 labels[i].Visible = true;
 
                 var an = new Animation1D(new ObjectWrapper(labels[i]), i.ToString());
@@ -71,6 +94,8 @@ namespace CallYourName
             aniCtrl = new AnimationController(anis);
 
             tail = labels[labels.Count - 1];
+
+            FPSTimer.Enabled = true;
         }
 
         #region Start
@@ -79,7 +104,7 @@ namespace CallYourName
         {
             if (candidate != null)
             {
-                candidate.ForeColor = RandomColor();
+                candidate.ForeColor = GetColor();
                 candidate = null;
             }
 
@@ -89,7 +114,7 @@ namespace CallYourName
                 {
                     var item = an.AniObject as ObjectWrapper;
                     an.Reset();
-                    an.WithMoveAction(null, -LABEL_ACC, -LABEL_MAX_SPEED, -item.Object.Width, "Acc1")
+                    an.WithMoveAction(null, -labelAcc, -labelMaxSpeed, -item.Object.Width, "Acc1")
                       .WithCallAction(onAcc1Call, "ReachL");
                     an.ToFirstAction();
                 }
@@ -97,8 +122,16 @@ namespace CallYourName
 
             aniCtrl.Start();
 
-            Startbutton.Visible = false;
-            StopButton.Visible = true;
+            if (!autoStopCheckbox.Checked)
+            {
+                Startbutton.Visible = false;
+                StopButton.Visible = true;
+            }
+            else
+            {
+                Startbutton.Enabled = false;
+                autoTimer.Enabled = true;
+            }
         }
 
         #endregion
@@ -115,7 +148,7 @@ namespace CallYourName
             aniObj.Move();
 
             label.Text = RandomName();
-            label.ForeColor = RandomColor();
+            label.ForeColor = GetColor();
 
             tail = (an.AniObject as ObjectWrapper).Object as Label;
 
@@ -143,14 +176,28 @@ namespace CallYourName
             {
                 aniCtrl.Stop();
 
-                candidate.ForeColor = Color.Red;
-                player.Play();
+                candidate.ForeColor = candidateColor;
+
+                if (soundCheckBox.Checked)
+                    player.Play();
+
+                if (noRepeatCheckBox.Checked)
+                {
+                    nameList.Remove(candidate.Text);
+                }
 
                 Debug.WriteLine("Cand pos:{0}", candidate.Left);
 
-                Startbutton.Visible = true;
-                StopButton.Visible = false;
-                StopButton.Enabled = true;
+                if (!autoStopCheckbox.Checked)
+                {
+                    Startbutton.Visible = true;
+                    StopButton.Visible = false;
+                    StopButton.Enabled = true;
+                }
+                else
+                {
+                    Startbutton.Enabled = true;
+                }
             }
 
             return true;
@@ -202,7 +249,7 @@ namespace CallYourName
 
             candidate = cand;
 
-            double acc = (LABEL_MAX_SPEED * LABEL_MAX_SPEED) / (2 * (cand.Left - finalPos)); // a = (0.1v)^2/(2x)
+            double acc = (labelMaxSpeed * labelMaxSpeed) / (2 * (cand.Left - finalPos)); // a = (0.1v)^2/(2x)
             Debug.WriteLine("Acc:{0}", acc);
 
             return acc;
@@ -222,14 +269,161 @@ namespace CallYourName
         }
         #endregion
 
-        private string RandomName()
+        private void RemoveCandName()
         {
-            return nameList[rand.Next(0, nameList.Length)];
+            nameList.Remove(candidate.Text);
+
+            if (nameList.Count == 0)
+            {
+                MessageBox.Show("所有人都已点过。现在重新开始。", "完成", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                nameList = File.ReadAllLines(FILE_NAME, Encoding.Unicode).ToList();
+            }
         }
 
-        private Color RandomColor()
+        private string RandomName()
         {
-            return Color.FromArgb(rand.Next(50, 150), rand.Next(50, 150), rand.Next(50, 150));
+            return nameList[rand.Next(0, nameList.Count-1)];
+        }
+
+        private Color GetColor()
+        {
+            if (randomColorCheckbox.Checked)
+                return Color.FromArgb(rand.Next(50, 150), rand.Next(50, 150), rand.Next(50, 150));
+            else
+                return colorPanel1.BackColor;
+        }
+
+        private void FPSTimer_Tick(object sender, EventArgs e)
+        {
+            FPSlabel.Text = aniCtrl.FPS.ToString();
+        }
+
+
+        private void autoTimer_Tick(object sender, EventArgs e)
+        {
+            ++timeCount;
+            if (timeCount > autoTime.Value)
+            {
+                autoTimer.Enabled = false;
+                StopButton_Click(sender, e);
+            }
+        }
+
+        private void colorButton1_Click(object sender, EventArgs e)
+        {
+            colorDialog1.ShowDialog();
+            colorPanel1.BackColor = colorDialog1.Color;
+        }
+
+        private void colorButton2_Click(object sender, EventArgs e)
+        {
+            colorDialog1.ShowDialog();
+            colorPanel2.BackColor = colorDialog1.Color;
+            candidateColor = colorDialog1.Color;
+        }
+
+        private void randomColorCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            colorButton1.Enabled = !randomColorCheckbox.Checked;
+        }
+
+        private void speedBar_ValueChanged(object sender, EventArgs e)
+        {
+            labelMaxSpeed = 0.5 * speedBar.Value;
+        }
+
+        private void accBar_ValueChanged(object sender, EventArgs e)
+        {
+            labelAcc = 0.05 * accBar.Value;
+        }
+
+        private void readSetting()
+        {
+            if (!File.Exists(SETTING_FILE)) return;
+
+            IniFile ini = new IniFile(Directory.GetCurrentDirectory() + "/" + SETTING_FILE);
+            Debug.WriteLine(Directory.GetCurrentDirectory() + "/" + SETTING_FILE);
+            if (ini.IniReadValue("settings", "NoRepeat") == "True")
+                noRepeatCheckBox.Checked = true;
+
+            if (ini.IniReadValue("settings", "AutoStop") == "True")
+                autoStopCheckbox.Checked = true;
+
+            if (ini.IniReadValue("settings", "RandomColor") == "False")
+                randomColorCheckbox.Checked = false;
+
+            if (ini.IniReadValue("settings", "Sound") == "False")
+                soundCheckBox.Checked = false;
+
+            string colorStr;
+
+            if (!string.IsNullOrEmpty(colorStr = (ini.IniReadValue("settings", "Color"))))
+            {
+                colorPanel1.BackColor = Color.FromArgb(int.Parse(colorStr));
+            }
+
+            if (!string.IsNullOrEmpty(colorStr = (ini.IniReadValue("settings", "SelectedColor"))))
+            {
+                colorPanel2.BackColor = Color.FromArgb(int.Parse(colorStr));
+            }
+
+            string num;
+            int i;
+            if (!string.IsNullOrEmpty(num = ini.IniReadValue("settings", "Speed")))
+            {
+                i = int.Parse(num);
+                speedBar.Value = (i <= 20 && i >= 1) ? i : 2;
+            }
+            if (!string.IsNullOrEmpty(num = ini.IniReadValue("settings", "Acceleration")))
+            {
+                i = int.Parse(num);
+                accBar.Value = (i <= 10 && i >= 1) ? i : 2;
+            }
+            if (!string.IsNullOrEmpty(num = ini.IniReadValue("settings", "AutoStopSec")))
+            {
+                i = int.Parse(num);
+                autoTime.Value = (i <= 100 && i >= 1) ? i : 2;
+            }
+        }
+
+        private void writeSetting()
+        {
+            IniFile ini = new IniFile(Directory.GetCurrentDirectory() + "/" + SETTING_FILE);
+            ini.IniWriteValue("settings", "NoRepeat", noRepeatCheckBox.Checked.ToString());
+            ini.IniWriteValue("settings", "AutoStop", autoStopCheckbox.Checked.ToString());
+            ini.IniWriteValue("settings", "AutoStopSec", autoTime.Value.ToString());
+            ini.IniWriteValue("settings", "RandomColor", randomColorCheckbox.Checked.ToString());
+            ini.IniWriteValue("settings", "Color", colorPanel1.BackColor.ToArgb().ToString());
+            ini.IniWriteValue("settings", "SelectedColor", colorPanel2.BackColor.ToArgb().ToString());
+            ini.IniWriteValue("settings", "Speed", speedBar.Value.ToString());
+            ini.IniWriteValue("settings", "Acceleration", accBar.Value.ToString());
+            ini.IniWriteValue("settings", "Sound",soundCheckBox.Checked .ToString());
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            writeSetting();
+        }
+
+        private void openOption_Click(object sender, EventArgs e)
+        {
+            if (!isOptionOpen)
+            {
+                this.Height = OPTION_WINDOW_H;
+                openOption.Text = "收起选项";
+            }else
+            {
+                this.Height = DEFAULT_WINDOW_H;
+                openOption.Text  = "选项";
+            }
+
+            isOptionOpen = !isOptionOpen;
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(Properties.Resources .About , "关于", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
     }
