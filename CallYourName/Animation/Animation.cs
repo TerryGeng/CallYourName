@@ -25,10 +25,7 @@ namespace CallYourName.Animation
         public AnimationStatus Status;
 
         private List<IAction> actionSeq;
-        private IAction currentAction;
         private int cur;
-
-        private IAction curAction;
 
         private bool running;
 
@@ -41,6 +38,7 @@ namespace CallYourName.Animation
 
             actionSeq = new List<IAction>();
             cur = -1;
+
         }
 
         public void Initialize()
@@ -49,24 +47,29 @@ namespace CallYourName.Animation
             loadNextAction();
         }
 
+        #region Running Loop Thread
+
         private void loadNextAction()
         {
+
             if (!running) return;
 
-            if ((curAction = NextAction()) == null)
+            if ((NextAction()) == null)
             {
                 Stop();
                 return;
             }
-            
-            Debug.WriteLine("[{0}] Get Action: {1}", ID, curAction.ActionName);
+
+            Debug.WriteLine("[{0}] Get: {1}", ID, actionSeq[cur].ActionName);
+
         }
 
         public void LoopEvent(int timeInterval)
         {
-            if (!running) return; 
+            if (!running) return;
 
-            if (!curAction.DoAction(timeInterval))
+            Debug.WriteLine("[{0}] Cur: {1}", ID, actionSeq[cur].ActionName);
+            if (!actionSeq[cur].DoAction(timeInterval))
             {
                 loadNextAction();
             }
@@ -77,6 +80,8 @@ namespace CallYourName.Animation
             Status = AnimationStatus.Stop;
             running = false;
         }
+
+        #endregion
 
         #region Add Action
         public Animation1D WithMoveAction(double? initV, double accele, double? finalV, double? finalLoc, string name = null)
@@ -98,37 +103,65 @@ namespace CallYourName.Animation
             actionSeq.Add(action);
         }
 
+        public void Reset()
+        {
+            actionSeq = new List<IAction>();
+        }
+
         #endregion
 
+        #region Action Sequence Control
         public IAction NextAction()
         {
             ++cur;
             if (cur > actionSeq.Count) return null;
 
-            currentAction = actionSeq[cur];
-            return currentAction;
+            return actionSeq[cur];
         }
 
         public Animation1D ToLastAction()
         {
-            cur = actionSeq.Count - 2;
-            currentAction = actionSeq[cur];
+            cur = actionSeq.Count - 1;
             return this;
         }
 
         public Animation1D ToFirstAction()
         {
-            cur = -1;
-            currentAction = actionSeq[cur];
+            cur = 0;
             return this;
         }
 
         public Animation1D ToPreviousAction()
         {
-            cur -= 2;
-            currentAction = actionSeq[cur];
+            Debug.WriteLine("[{0}][To Pre]Cur: {1}",this.ID , cur);
+            Debug.Assert(cur != 0);
+            cur -= 1;
             return this;
         }
+
+        public Animation1D ToNextAction()
+        {
+            cur += 1;
+            return this;
+        }
+
+        public bool ToAction(string ID)
+        {
+            IAction act;
+            for (int i = 0; i < actionSeq.Count;++i )
+            {
+                act = actionSeq[i]; 
+                if (act.ActionName != null && act.ActionName == ID)
+                {
+                    cur = i;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        #endregion
 
     }
 }

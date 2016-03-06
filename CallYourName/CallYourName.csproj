@@ -54,7 +54,6 @@
     <Compile Include="Animation\Actions.cs" />
     <Compile Include="Animation\Animation.cs" />
     <Compile Include="Animation\AnimationController.cs" />
-    <Compile Include="Animation\EventTrigger.cs" />
     <Compile Include="Animation\AniObject.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -62,7 +61,6 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Animation\Motion.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">

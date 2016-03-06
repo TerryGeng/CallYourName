@@ -18,9 +18,9 @@ namespace CallYourName.Animation
         private bool running;
         private Thread aniThread;
 
-        public AnimationController()
+        public AnimationController(List<Animation1D> aniList)
         {
-            animationList = new List<Animation1D>();
+            animationList = aniList;
             running = false;
         }
 
@@ -56,17 +56,20 @@ namespace CallYourName.Animation
 
             while (running)
             {
-                int current = System.Environment.TickCount;
-                int delta = current - lastTime;
-
-                foreach (Animation1D ani in animationList)
+                lock (this)
                 {
-                    ani.LoopEvent(delta);
+                    int current = System.Environment.TickCount;
+                    int delta = current - lastTime;
+
+                    foreach (Animation1D ani in animationList)
+                    {
+                        ani.LoopEvent(delta);
+                    }
+
+                    lastTime = current;
                 }
 
-                lastTime = current;
-
-                Thread.Sleep(10);
+                Thread.Sleep(5);
             }
 
             return;
@@ -77,10 +80,7 @@ namespace CallYourName.Animation
             if (!running) return;
             running = false;
 
-            while (aniThread.IsAlive)
-            {
-                Thread.Sleep(1);
-            }
+            Thread.Sleep(1);
 
             foreach (Animation1D ani in animationList)
             {
