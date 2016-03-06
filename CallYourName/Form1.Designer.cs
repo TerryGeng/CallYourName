@@ -38,6 +38,7 @@
             this.Startbutton = new System.Windows.Forms.Button();
             this.StopButton = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.soundCheckBox = new System.Windows.Forms.CheckBox();
             this.panel2 = new System.Windows.Forms.Panel();
             this.FPSlabel = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -59,7 +60,6 @@
             this.FPSTimer = new System.Windows.Forms.Timer(this.components);
             this.autoTimer = new System.Windows.Forms.Timer(this.components);
             this.openOption = new System.Windows.Forms.Button();
-            this.soundCheckBox = new System.Windows.Forms.CheckBox();
             this.button1 = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -167,6 +167,18 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "选项";
             // 
+            // soundCheckBox
+            // 
+            this.soundCheckBox.AutoSize = true;
+            this.soundCheckBox.Checked = true;
+            this.soundCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.soundCheckBox.Location = new System.Drawing.Point(16, 216);
+            this.soundCheckBox.Name = "soundCheckBox";
+            this.soundCheckBox.Size = new System.Drawing.Size(60, 16);
+            this.soundCheckBox.TabIndex = 7;
+            this.soundCheckBox.Text = "音效开";
+            this.soundCheckBox.UseVisualStyleBackColor = true;
+            // 
             // panel2
             // 
             this.panel2.BackColor = System.Drawing.Color.Black;
@@ -212,12 +224,13 @@
             // 
             this.accBar.AutoSize = false;
             this.accBar.Location = new System.Drawing.Point(173, 36);
+            this.accBar.Maximum = 20;
             this.accBar.Minimum = 1;
             this.accBar.Name = "accBar";
             this.accBar.Size = new System.Drawing.Size(157, 24);
             this.accBar.TabIndex = 2;
             this.accBar.TickStyle = System.Windows.Forms.TickStyle.None;
-            this.accBar.Value = 2;
+            this.accBar.Value = 10;
             this.accBar.ValueChanged += new System.EventHandler(this.accBar_ValueChanged);
             // 
             // label6
@@ -233,7 +246,6 @@
             // 
             this.speedBar.AutoSize = false;
             this.speedBar.Location = new System.Drawing.Point(10, 36);
-            this.speedBar.Maximum = 20;
             this.speedBar.Minimum = 1;
             this.speedBar.Name = "speedBar";
             this.speedBar.Size = new System.Drawing.Size(157, 24);
@@ -372,18 +384,6 @@
             this.openOption.Text = "选项";
             this.openOption.UseVisualStyleBackColor = true;
             this.openOption.Click += new System.EventHandler(this.openOption_Click);
-            // 
-            // soundCheckBox
-            // 
-            this.soundCheckBox.AutoSize = true;
-            this.soundCheckBox.Checked = true;
-            this.soundCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.soundCheckBox.Location = new System.Drawing.Point(16, 216);
-            this.soundCheckBox.Name = "soundCheckBox";
-            this.soundCheckBox.Size = new System.Drawing.Size(60, 16);
-            this.soundCheckBox.TabIndex = 7;
-            this.soundCheckBox.Text = "音效开";
-            this.soundCheckBox.UseVisualStyleBackColor = true;
             // 
             // button1
             // 

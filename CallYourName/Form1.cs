@@ -114,7 +114,7 @@ namespace CallYourName
                 {
                     var item = an.AniObject as ObjectWrapper;
                     an.Reset();
-                    an.WithMoveAction(null, -labelAcc, -labelMaxSpeed, -item.Object.Width, "Acc1")
+                    an.WithMoveAction(0, -labelAcc, -labelMaxSpeed, -item.Object.Width, "Acc1")
                       .WithCallAction(onAcc1Call, "ReachL");
                     an.ToFirstAction();
                 }
@@ -183,7 +183,7 @@ namespace CallYourName
 
                 if (noRepeatCheckBox.Checked)
                 {
-                    nameList.Remove(candidate.Text);
+                    RemoveCandName();
                 }
 
                 Debug.WriteLine("Cand pos:{0}", candidate.Left);
@@ -334,7 +334,7 @@ namespace CallYourName
 
         private void accBar_ValueChanged(object sender, EventArgs e)
         {
-            labelAcc = 0.05 * accBar.Value;
+            labelAcc = 0.002 * accBar.Value;
         }
 
         private void readSetting()
@@ -365,6 +365,7 @@ namespace CallYourName
             if (!string.IsNullOrEmpty(colorStr = (ini.IniReadValue("settings", "SelectedColor"))))
             {
                 colorPanel2.BackColor = Color.FromArgb(int.Parse(colorStr));
+                candidateColor = colorPanel2.BackColor;
             }
 
             string num;
@@ -372,17 +373,17 @@ namespace CallYourName
             if (!string.IsNullOrEmpty(num = ini.IniReadValue("settings", "Speed")))
             {
                 i = int.Parse(num);
-                speedBar.Value = (i <= 20 && i >= 1) ? i : 2;
+                speedBar.Value = (i <= 20 && i >= 1) ? i : 10;
             }
             if (!string.IsNullOrEmpty(num = ini.IniReadValue("settings", "Acceleration")))
             {
                 i = int.Parse(num);
-                accBar.Value = (i <= 10 && i >= 1) ? i : 2;
+                accBar.Value = (i <= 10 && i >= 1) ? i : 4;
             }
             if (!string.IsNullOrEmpty(num = ini.IniReadValue("settings", "AutoStopSec")))
             {
                 i = int.Parse(num);
-                autoTime.Value = (i <= 100 && i >= 1) ? i : 2;
+                autoTime.Value = (i <= 100 && i >= 1) ? i : 1;
             }
         }
 
