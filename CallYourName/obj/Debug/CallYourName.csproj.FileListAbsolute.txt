@@ -1,9 +1,0 @@
-E:\Programme\VB\CallYourName\CallYourName\bin\Debug\CallYourName.exe.config
-E:\Programme\VB\CallYourName\CallYourName\bin\Debug\CallYourName.exe
-E:\Programme\VB\CallYourName\CallYourName\bin\Debug\CallYourName.pdb
-E:\Programme\VB\CallYourName\CallYourName\obj\Debug\CallYourName.csprojResolveAssemblyReference.cache
-E:\Programme\VB\CallYourName\CallYourName\obj\Debug\CallYourName.Form1.resources
-E:\Programme\VB\CallYourName\CallYourName\obj\Debug\CallYourName.Properties.Resources.resources
-E:\Programme\VB\CallYourName\CallYourName\obj\Debug\CallYourName.csproj.GenerateResource.Cache
-E:\Programme\VB\CallYourName\CallYourName\obj\Debug\CallYourName.exe
-E:\Programme\VB\CallYourName\CallYourName\obj\Debug\CallYourName.pdb
